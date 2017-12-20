@@ -1,6 +1,6 @@
 "=============================================
-"    Name: todo.vim
-"    File: todo.vim
+"  Name: todo.vim
+"  File: todo.vim
 " Summary: todo items
 "  Author: Rykka G.Forest
 "  Update: 2013-05-26
@@ -91,14 +91,14 @@ fun! s:grp_max_i(grp) "{{{
 endfun "}}}
 
 fun! s:add_item(line,grp,idx) "{{{
-   let max_i = s:grp_max_i(a:grp)
-   let id = a:idx > max_i ? max_i : a:idx < 0 ? 0 : a:idx 
-   return substitute(a:line, s:p.all_list, '\0'.s:t.todo_all_group[a:grp][id].' ','')
+     let max_i = s:grp_max_i(a:grp)
+     let id = a:idx > max_i ? max_i : a:idx < 0 ? 0 : a:idx 
+     return substitute(a:line, s:p.all_list, '\0'.s:t.todo_all_group[a:grp][id].' ','')
 endfun "}}}
 fun! s:mod_item(line,grp,idx) "{{{
-   let max_i = s:grp_max_i(a:grp)
-   let id = a:idx > max_i ? max_i : a:idx < 0 ? 0 : a:idx 
-   return substitute(a:line, s:p.todo_b_k, '\1'.s:t.todo_all_group[a:grp][id].' ','')
+     let max_i = s:grp_max_i(a:grp)
+     let id = a:idx > max_i ? max_i : a:idx < 0 ? 0 : a:idx 
+     return substitute(a:line, s:p.todo_b_k, '\1'.s:t.todo_all_group[a:grp][id].' ','')
 endfun "}}}
 fun! s:rmv_item(line) "{{{
     return substitute(a:line, s:p.todo_all, '\1','')
@@ -134,7 +134,7 @@ endfun "}}}
 
 fun! s:add_prior(line, id) "{{{
     let max_i = len(s:prior_str) -1
-   let id = a:id > max_i ? max_i : a:id < 0 ? 0 : a:id 
+     let id = a:id > max_i ? max_i : a:id < 0 ? 0 : a:id 
     return substitute(a:line, s:p.todo_all, '\1\2[#'.s:prior_str[id].'] \4\5','')
 endfun "}}}
 fun! s:rmv_prior(line) "{{{
@@ -154,11 +154,11 @@ endfun "}}}
 fun! riv#todo#toggle() "{{{
     " Toggle todo item of current line
     " if is list
-    "   if not todo
-    "      add todo item
-    "   else
-    "      next todo item idx
-    "      add or remove tm
+    " if not todo
+    "        add todo item
+    " else
+    "        next todo item idx
+    "        add or remove tm
     let [row, col] = [line('.'), col('.')]
     let line = getline(row)
     
@@ -370,8 +370,8 @@ fun! s:cache_todo(force) "{{{
     endif
 
     let files = split(glob(root.'**/*'.riv#path#ext()))
-    let b_path = riv#path#build_path()
-    let files = filter(files, ' riv#path#is_rel_to(b_path, v:val)')
+"    let b_path = riv#path#build_path()
+"    let files = filter(files, 'riv#path#is_rel_to(b_path, v:val)')
 
     let todos = []
     let lines = []
@@ -387,7 +387,7 @@ endfun "}}}
 fun! s:file2lines(filelines,filename,...) "{{{
     let l = a:0 ? a:1 : 20
     let lines = a:filelines
-    let list  = range(len(lines))
+    let list    = range(len(lines))
     call filter(list, 'lines[v:val]=~g:_riv_p.todo_b_k  ')
     call map(list, 
     \'printf("%-".l."s %4d | ", a:filename, (v:val+1)).riv#ptn#strip(lines[v:val])')
@@ -397,7 +397,10 @@ endfun "}}}
 fun! s:load_todo() "{{{
     let file = expand('%:p')
     if riv#path#is_rel_to(riv#path#root(), file ) || &ft!='rst'
-        call s:cache_todo(0)
+        for fname in split(globpath(riv#path#root(), '**/*'.riv#path#ext()))
+            call riv#todo#update(fname)
+        endfor
+        call s:cache_todo(1)
         return readfile(riv#path#root().'.todo_cache')
     else
         return s:file2lines(readfile(file), '%', 5)
@@ -406,10 +409,15 @@ endfun "}}}
 fun! riv#todo#force_update() "{{{
     call s:cache_todo(1)
 endfun "}}}
-fun! riv#todo#update() "{{{
+
+fun! riv#todo#update(...) "{{{
     " update the todo cache with current file
     let file = expand('%:p')
-    
+
+    if a:0 == 1
+        let file a:1
+    endif
+
     " don't cache file in build path
     if riv#path#is_rel_to(riv#path#build_path(), file)
         return
